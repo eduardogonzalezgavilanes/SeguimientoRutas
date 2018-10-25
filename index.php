@@ -123,12 +123,12 @@ function initMap() {
 	directionsDisplay1.setMap(map);
 	var onChangeHandler1 = function() {calculateAndDisplayRoute(directionsService1, directionsDisplay1, $('#start1'),$('#end1'));};
 	$('#start1,#end1').change(onChangeHandler1);		
-	
 	function calculateAndDisplayRoute(directionsService, directionsDisplay, start, end) { 
 		directionsService.route({
 			origin: start.val(),
 			destination: end.val(),
 			waypoints: waypts,
+			optimizeWaypoints: true,
 			travelMode: 'WALKING'
 		}, function(response, status) {
 			if (status === 'OK') {
@@ -140,7 +140,7 @@ function initMap() {
 					var marker = makeMarker(leg.steps[i].start_location);
 					markers.push(marker);
 					marker.setMap(null);
-					alert(leg.steps.length);
+					alert(leg.steps[i].distance.text);
 				}
 				tracePath(markers, 0);
 				
