@@ -1,3 +1,4 @@
+i=0;
 function calcDistance(p1, p2) {//p1 and p2 in the form of google.maps.LatLng object
 	return (google.maps.geometry.spherical.computeDistanceBetween(p1, p2) / 1000).toFixed(3);//distance in KiloMeters
 }
@@ -12,16 +13,16 @@ function showPosition(position) {
 function showError(error) {
 	switch(error.code) {
 		case error.PERMISSION_DENIED:
-			alert("User denied the request for Geolocation.");
+			alert("Usuario negó la solicitud de Geolocalización.");
 			break;
 		case error.POSITION_UNAVAILABLE:
-			alert("Location information is unavailable.");
+			alert("La información de ubicación no está disponible.");
 			break;
 		case error.TIMEOUT:
-			alert("The request to get user location timed out.");
+			alert("La solicitud para obtener la ubicación del usuario ha caducado.");
 			break;
 		case error.UNKNOWN_ERROR:
-			alert("An unknown error occurred.");
+			alert("Un error desconocido ocurrió.");
 			break;
 	}
 }
@@ -90,9 +91,11 @@ function initMap() {
 		//suppressMarkers: true
 	});
 	directionsDisplay1.setMap(map);
-	var onChangeHandler1 = function() {calculateAndDisplayRoute(directionsService1, directionsDisplay1, $('#start1'),$('#end1'));};
-	$('#start1,#end1').change(onChangeHandler1);		
+    var onChangeHandler1 = function() {calculateAndDisplayRoute(directionsService1, directionsDisplay1, $('#start1'),$('#end1'));};
+	$('#start1,#end1').change(onChangeHandler1);
+
 	function calculateAndDisplayRoute(directionsService, directionsDisplay, start, end) { 
+		i=1;
 		directionsService.route({
 			origin: start.val(),
 			destination: end.val(),
@@ -111,19 +114,14 @@ function initMap() {
 					markers.push(marker);
 					marker.setMap(null);
 					//alert(leg.steps[i].distance.text);
+					//alert(leg.steps[i].start_location);
 				}
 				tracePath(markers, 0);
 				
 				var location = makeMarker(leg.steps[0].start_location);
 				continuouslyUpdatePosition(location);
-				
-			} else {window.alert('Directions request failed due to ' + status);}
+			} else {window.alert('Solicitud de indicaciones fallida debido a ' + status);}
 		});
-		  google.maps.event.addListener(location, 'click', function(event) {
-    addMarker(event.latLng, map);
-  });
-
-
 
 	}
 	
@@ -137,8 +135,44 @@ function initMap() {
 		//alert(markers.length);
 	}
 
-   
-      
 
+   function obtener_ubicacion(long,lat,campo) {
+       var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({
+              "location": new google.maps.LatLng(long, lat)
+
+            },
+            function(results, status) {
+              if (status == google.maps.GeocoderStatus.OK){
+              	 campo.val(results[0].formatted_address);
+
+              	 //campo.change();
+              }
+               // $("#" + addressId).val(results[0].formatted_address);
+              else
+                alert("Error al buscar datos");
+                //$("#error").append("Unable to retrieve your address<br />");
+            });
+   }
+
+
+ directionsDisplay1.addListener('directions_changed', function() {
+      if(i==0){
+         var response=directionsDisplay1.getDirections();
+		 var leg1 = response.routes[ 0 ].legs[ 0 ];
+		 var inicio=leg1.steps[0].start_location;
+		 var final=leg1.steps[leg1.steps.length-1].end_location;
+		 obtener_ubicacion(inicio.lat(), inicio.lng(),$('#start1'));
+		 obtener_ubicacion(final.lat(), final.lng(),$('#end1'));
+        }
+     i=0;    
+ });
 	calculateAndDisplayRoute(directionsService1, directionsDisplay1, $('#start1'),$('#end1'));
 }
+
+function actualizar(){
+	$('#start1').change();
+
+}
+
+
